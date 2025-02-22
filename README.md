@@ -8,7 +8,7 @@ Docker образ для создания HTTP туннелей с помощь�
 docker run -d \
   --network host \
   -e AUTH_TOKEN=your_token \
-  ghcr.io/WEBzaytsev/tunnel:latest
+  ghcr.io/webzaytsev/tunnel:latest
 ```
 
 ## Переменные окружения
@@ -25,7 +25,7 @@ docker run -d \
 ```yaml
 services:
   portr:
-    image: ghcr.io/WEBzaytsev/tunnel:latest
+    image: ghcr.io/webzaytsev/tunnel:latest
     network_mode: host
     restart: unless-stopped
     environment:
