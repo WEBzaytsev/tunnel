@@ -1,0 +1,11 @@
+services:
+  portr:
+    image: ghcr.io/WEBzaytsev/tunnel:latest
+    container_name: portr
+    environment:
+      - AUTH_TOKEN=${AUTH_TOKEN}
+      - SUBDOMAIN=${SUBDOMAIN:-myapp}
+      - PORT=${PORT:-80}
+      - REMOTE_HOST=${REMOTE_HOST:-t.letsmake.cc}
+    restart: unless-stopped
+    network_mode: host
