@@ -1,0 +1,46 @@
+name: Check Portr Version
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Каждый понедельник в 00:00 UTC
+  workflow_dispatch:      # Возможность запуска вручную
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Portr Release
+        id: portr-version
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/amalshaji/portr/releases/latest | jq -r .tag_name)
+          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Latest version: $LATEST_VERSION"
+
+      - name: Update Dockerfile
+        id: update-dockerfile
+        run: |
+          CURRENT_VERSION=$(grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+-beta' Dockerfile)
+          LATEST_VERSION=${{ steps.portr-version.outputs.latest_version }}
+          
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            echo "Updating from $CURRENT_VERSION to $LATEST_VERSION"
+            sed -i "s/$CURRENT_VERSION/$LATEST_VERSION/g" Dockerfile
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Already using latest version"
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit changes
+        if: steps.update-dockerfile.outputs.updated == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add Dockerfile
+          git commit -m "chore: update Portr to ${{ steps.portr-version.outputs.latest_version }}"
+          git push 
